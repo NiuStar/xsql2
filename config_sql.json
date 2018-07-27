@@ -1,0 +1,8 @@
+{
+	"sqlName":"root",
+	"sqlPassword":"root",
+	"ip":"192.168.1.253",
+	"port":"3306",
+	"Database":"Message",
+	"path":"./"
+}
