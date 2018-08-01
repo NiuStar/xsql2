@@ -36,7 +36,8 @@ func main() {
    var xs = xsql2.InitSql("root","root","192.168.1.102","3306","Message","utf8")
    message := Message.CreateMessages()//创建messages库的映射对象
    test := Message.CreateTest()//创建test库的映射对象
-   results := xs.Table(message,test).Field(test.ID,message.ID,message.MESSAGE,message.ADD_TIME,test.NAME).Where(message.ID,"=","1").WhereParam( message.ID , "=" , test.ID).Select()
+   abc := Message.Createabc()
+   results := xs.Table(message,test).LeftJoin(abc).OnParam(abc.ID, "=", db2.ID).Field(test.ID.,message.ID.AS("MsgID"),abc.ID,test.NAME).Where(message.ID,"=","1").LL().OR().Where(message.ID,"=","1").RR.WhereParam( message.ID , "=" , test.ID).Select()
 
   // results := xs.Table(test).Field(test.ID,test.NAME,test.AGE).Where(test.ID,">","1").OrderByDESC(test.ID).OrderByASC(test.NAME).Select()
    xs.Table(test).Where(test.ID,">","1").Delete()
@@ -64,7 +65,7 @@ func main() {
    message := Message.CreateMessages()//创建messages库的映射对象
    test := Message.CreateTest()//创建test库的映射对象
 
-   xs.Table(message,test).Set(message.MESSAGE,"我也不知道啥内容").Set(test.NAME,"李海燕2").Where(message.ID,"=","1").WhereParam( message.ID , "=" , test.ID).Update()
+   xs.Table(message,test).Field(message.ID,message.IDD).SET(1,"??????").Where(message.ID,"=","1").WhereParam( message.ID , "=" , test.ID).Update()
    return
 }
 ```
