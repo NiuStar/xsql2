@@ -36,6 +36,7 @@ type XSql2Order struct {
 	args  []interface{}//insert values
 
 	orderbys	[]string
+	limit string
 	or 			[]string
 	xsql2		*XSql2
 }
@@ -133,6 +134,10 @@ func (order *XSql2Order)Field(obj... *XSqlParam) XSql2Field {
 
 func (this *XSqlParam)AS(n string)*XSqlParam{
 	this.AS_ = n
+	return this
+}
+func (this *XSqlParam)Ch(n string)*XSqlParam{
+	this.Type_ = n
 	return this
 }
 

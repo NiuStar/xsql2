@@ -2,11 +2,9 @@ package xsql2
 
 import (
 	"bytes"
-	"fmt"
-)
+	)
 
 func (order *XSql2Order) Select() []map[string]interface{} {
-	fmt.Println(11111)
 	if len(order.fields) <= 0 || len(order.tables) <= 0 {
 		return nil
 	}

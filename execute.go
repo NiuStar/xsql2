@@ -10,6 +10,21 @@ func (order *XSql2Order) executeNoResult(req string) {
 	fmt.Println("ExecuteNoResult执行参数: ",order.args)
 	order.xsql2.db.QueryRow(req,order.args...)
 }
+func (order *XSql2Order) executeForLastInsertId(req string) int64{
+	fmt.Println("ExecuteNoResult执行语句: " , req)
+	fmt.Println("ExecuteNoResult执行参数: ",order.args)
+	r,err :=order.xsql2.db.Exec(req,order.args...)
+	if err != nil {
+		fmt.Println(err)
+		return 0
+	}
+	n,err := r.LastInsertId()
+	if err != nil {
+		fmt.Println(err)
+		return 0
+	}
+	return n
+}
 
 func (order *XSql2Order) execute(req string) (results []map[string]interface{}) { //SQL
 

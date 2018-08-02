@@ -1,6 +1,7 @@
 package xsql2
 
 type XSql2OrderBy interface {
+	LIMIT(a,z int) XSql2limit
 	Select() []map[string]interface{}
 }
 

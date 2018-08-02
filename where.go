@@ -17,6 +17,9 @@ type XSql2Where interface {
 	Delete() string
 	OrderByDESC(obj... *XSqlParam) XSql2OrderBy
 	OrderByASC(obj... *XSqlParam) XSql2OrderBy
+	LIMIT(a,z int) XSql2limit
+	IN(obj *XSqlParam, v ...interface{})XSql2Where
+	Like(obj *XSqlParam, v string)XSql2Where
 }
 
 func (order *XSql2Order) Where(obj *XSqlParam, op string, v interface{}) XSql2Where {

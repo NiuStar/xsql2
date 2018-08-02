@@ -6,7 +6,7 @@ import (
 )
 
 type XSql2Insert interface {
-	Insert() string
+	Insert() int64
 	Add(value... interface{}) XSql2Insert
 
 }
@@ -17,11 +17,11 @@ func (order *XSql2Order)Add(value... interface{}) XSql2Insert {
 	return order
 }
 
-func (order *XSql2Order)Insert() string {
+func (order *XSql2Order)Insert() int64 {
 
 	if len(order.values) <= 0 || len(order.tables) <=0 {
 		fmt.Println("数据库执行出错，len(order.x.sets) <= 0 || len(order.x.tables) <=0：",len(order.sets) ,len(order.tables) )
-		return "error"
+		return 0
 	}
 	var sqlOrder bytes.Buffer
 	sqlOrder.Grow(8192)
@@ -74,7 +74,6 @@ func (order *XSql2Order)Insert() string {
 		rows,err := stmt.Query()
 		checkErr(err)
 	}*/
-	list := order.execute(sqlOrder.String())
-	fmt.Println("list:",list)
-	return "true"
+	n := order.executeForLastInsertId(sqlOrder.String())
+	return n
 }
