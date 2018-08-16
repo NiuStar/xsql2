@@ -3,17 +3,33 @@ package xsql2
 import (
 	"fmt"
 
+	"database/sql"
 )
 
+
+//无结果执行
 func (order *XSql2Order) executeNoResult(req string) {
 	fmt.Println("ExecuteNoResult执行语句: " , req)
 	fmt.Println("ExecuteNoResult执行参数: ",order.args)
-	order.xsql2.db.QueryRow(req,order.args...)
+
+	if order.xsql2.txopen==1{
+		order.xsql2.tx.Exec(req,order.args...)
+	}else {
+		order.xsql2.db.Exec(req,order.args...)
+	}
 }
+//执行并返回最后一个ID
 func (order *XSql2Order) executeForLastInsertId(req string) int64{
 	fmt.Println("ExecuteNoResult执行语句: " , req)
 	fmt.Println("ExecuteNoResult执行参数: ",order.args)
-	r,err :=order.xsql2.db.Exec(req,order.args...)
+
+	var r sql.Result
+	var err error
+	if order.xsql2.txopen==1{
+		r,err =order.xsql2.tx.Exec(req,order.args...)
+	}else {
+		r,err =order.xsql2.db.Exec(req,order.args...)
+	}
 	if err != nil {
 		fmt.Println(err)
 		return 0
@@ -26,6 +42,7 @@ func (order *XSql2Order) executeForLastInsertId(req string) int64{
 	return n
 }
 
+//执行并返回结果
 func (order *XSql2Order) execute(req string) (results []map[string]interface{}) { //SQL
 
 	//defer func() {
@@ -41,8 +58,13 @@ func (order *XSql2Order) execute(req string) (results []map[string]interface{}) 
 	//s.xs.mLock.RLock()
 
 	//go timer(s)
-
-	rows, err := order.xsql2.db.Query(req,order.args...)
+	var rows *sql.Rows
+	var err error
+	if order.xsql2.txopen==1{
+		rows,err =order.xsql2.tx.Query(req,order.args...)
+	}else {
+		rows,err =order.xsql2.db.Query(req,order.args...)
+	}
 
 	//s.xs.mLock.RUnlock()
 	//s.ch = 1
@@ -86,7 +108,7 @@ func (order *XSql2Order) execute(req string) (results []map[string]interface{}) 
 		}
 		t := make(map[string]interface{})
 		for i, _ := range values {
-
+			//判断有没有别名，
 			if values[i] == nil {
 				if t[order.fields[i].Name] != nil && order.fields[i].AS_ ==""{
 					//t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2Int(values[i].([]byte))

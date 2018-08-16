@@ -15,9 +15,11 @@ import (
 )
 
 const LifeTime int64 = 60 * 60
-
+//数据库连接时候的参数
 type XSql2 struct {
 	db        *sql.DB
+	tx        *sql.Tx
+	txopen    int
 	name      string
 	password  string
 	ip        string
@@ -25,7 +27,7 @@ type XSql2 struct {
 	sqlName   string
 	stmts	  map[string]*sql.Stmt
 }
-
+//操作数据库的参数
 type XSql2Order struct {
 	tables 		[]XSqlObject //数据库表名
 	fields 		[]*XSqlParam //数据库字段
@@ -40,21 +42,21 @@ type XSql2Order struct {
 	or 			[]string
 	xsql2		*XSql2
 }
-
+//数据库表的参数
 type XSqlParam struct {
 	Name string
 	Type_ string
 	Target XSqlObject
 	AS_ string
 }
-
+//join的参数
 type XsqlJoin struct {
 	pos int
 	Target XSqlObject
 	conditions 	[]*condition
 	joinsql string
 }
-
+//字段参数
 type condition struct {
 	param int //0 =? 1 ID =ID
 	type_ int //0 AND 1 OR
@@ -89,7 +91,7 @@ func checkErr(err error) {
 		log.Write(err)
 	}
 }
-
+//初始化数据库，返回一个数据库操作对象
 func InitSql(name string, password string, ip string, port string, sqlName string,charset string) *XSql2 {
 	db := connectDB(name, password, ip, port, sqlName,charset)
 	fmt.Println("初始化数据库成功")
@@ -120,26 +122,27 @@ func connectDB(name string, password string, ip string, port string, sqlName str
 }
 
 
-
+//设置操作的数据库表
 func (x *XSql2)Table(obj... XSqlObject) XSql2Table {
 	return &XSql2Order{tables:obj,xsql2:x}
 }
-
+//需要操作的字段
 func (order *XSql2Order)Field(obj... *XSqlParam) XSql2Field {
 
 	//fmt.Println("obj:",obj)
 	order.fields = append(order.fields,obj...)
 	return order
 }
-
+//给某个字段重命名
 func (this *XSqlParam)AS(n string)*XSqlParam{
 	this.AS_ = n
 	return this
 }
-func (this *XSqlParam)Ch(n string)*XSqlParam{
-	this.Type_ = n
-	return this
-}
+
+//func (this *XSqlParam)Ch(n string)*XSqlParam{
+//	this.Type_ = n
+//	return this
+//}
 
 
 
