@@ -1,40 +1,51 @@
 package xsql2
 
 import (
-	"fmt"
-
 	"database/sql"
+	"fmt"
+	"runtime/debug"
 )
-
 
 //无结果执行
 func (order *XSql2Order) executeNoResult(req string) {
-	fmt.Println("ExecuteNoResult执行语句: " , req)
-	fmt.Println("ExecuteNoResult执行参数: ",order.args)
+	defer func() {
+		if e := recover(); e != nil {
+			fmt.Println("ExecuteNoResult执行语句: ", req)
+			fmt.Println("ExecuteNoResult执行参数: ", order.args)
+			fmt.Println(e)
+			fmt.Println(string(debug.Stack()))
+		}
 
-	if order.xsql2.txopen==1{
-		order.xsql2.tx.Exec(req,order.args...)
-	}else {
-		order.xsql2.db.Exec(req,order.args...)
+	}()
+
+	if order.xsql2.txopen == 1 {
+		order.xsql2.tx.Exec(req, order.args...)
+	} else {
+		order.xsql2.db.Exec(req, order.args...)
 	}
 }
+
 //执行并返回最后一个ID
-func (order *XSql2Order) executeForLastInsertId(req string) int64{
-	fmt.Println("ExecuteNoResult执行语句: " , req)
-	fmt.Println("ExecuteNoResult执行参数: ",order.args)
+func (order *XSql2Order) executeForLastInsertId(req string) int64 {
 
 	var r sql.Result
 	var err error
-	if order.xsql2.txopen==1{
-		r,err =order.xsql2.tx.Exec(req,order.args...)
-	}else {
-		r,err =order.xsql2.db.Exec(req,order.args...)
+	defer func() {
+		if err.Error() != "" {
+			fmt.Println("ExecuteNoResult执行语句: ", req)
+			fmt.Println("ExecuteNoResult执行参数: ", order.args)
+		}
+	}()
+	if order.xsql2.txopen == 1 {
+		r, err = order.xsql2.tx.Exec(req, order.args...)
+	} else {
+		r, err = order.xsql2.db.Exec(req, order.args...)
 	}
 	if err != nil {
 		fmt.Println(err)
 		return 0
 	}
-	n,err := r.LastInsertId()
+	n, err := r.LastInsertId()
 	if err != nil {
 		fmt.Println(err)
 		return 0
@@ -51,19 +62,26 @@ func (order *XSql2Order) execute(req string) (results []map[string]interface{}) 
 	//	}
 	//}()
 
-	fmt.Println("Execute执行语句: " , req)
-	fmt.Println("Execute执行参数: ",order.args)
+	fmt.Println("Execute执行语句: ", req)
+	fmt.Println("Execute执行参数: ", order.args)
 
 	//s.ch = 0
 	//s.xs.mLock.RLock()
-
 	//go timer(s)
 	var rows *sql.Rows
 	var err error
-	if order.xsql2.txopen==1{
-		rows,err =order.xsql2.tx.Query(req,order.args...)
-	}else {
-		rows,err =order.xsql2.db.Query(req,order.args...)
+
+	defer func() {
+		if err.Error() != "" {
+			fmt.Println("ExecuteNoResult执行语句: ", req)
+			fmt.Println("ExecuteNoResult执行参数: ", order.args)
+		}
+	}()
+
+	if order.xsql2.txopen == 1 {
+		rows, err = order.xsql2.tx.Query(req, order.args...)
+	} else {
+		rows, err = order.xsql2.db.Query(req, order.args...)
 	}
 
 	//s.xs.mLock.RUnlock()
@@ -93,7 +111,6 @@ func (order *XSql2Order) execute(req string) (results []map[string]interface{}) 
 		return nil
 	}
 
-
 	values := make([]interface{}, len(columns))
 	scanArgs := make([]interface{}, len(values))
 
@@ -110,13 +127,13 @@ func (order *XSql2Order) execute(req string) (results []map[string]interface{}) 
 		for i, _ := range values {
 			//判断有没有别名，
 			if values[i] == nil {
-				if t[order.fields[i].Name] != nil && order.fields[i].AS_ ==""{
+				if t[order.fields[i].Name] != nil && order.fields[i].AS_ == "" {
 					//t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2Int(values[i].([]byte))
-					t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = nil
-				} else if order.fields[i].AS_ !="" {
+					t[order.fields[i].Target.GetName()+"."+order.fields[i].Name] = nil
+				} else if order.fields[i].AS_ != "" {
 					//t[order.fields[i].Name] = byte2Int(values[i].([]byte))
 					t[order.fields[i].AS_] = nil
-				}else {
+				} else {
 					t[order.fields[i].Name] = nil
 				}
 				//t[order.fields[i].Name] = nil
@@ -128,13 +145,13 @@ func (order *XSql2Order) execute(req string) (results []map[string]interface{}) 
 					{
 						//fmt.Println("order.fields[i].Name:",byte2Int(values[i].([]byte)))
 
-						if t[order.fields[i].Name] != nil && order.fields[i].AS_ ==""{
+						if t[order.fields[i].Name] != nil && order.fields[i].AS_ == "" {
 							//t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2Int(values[i].([]byte))
-							t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = values[i].(int64)
-						} else if order.fields[i].AS_ !="" {
+							t[order.fields[i].Target.GetName()+"."+order.fields[i].Name] = values[i].(int64)
+						} else if order.fields[i].AS_ != "" {
 							//t[order.fields[i].Name] = byte2Int(values[i].([]byte))
 							t[order.fields[i].AS_] = values[i].(int64)
-						}else {
+						} else {
 							t[order.fields[i].Name] = values[i].(int64)
 						}
 
@@ -142,39 +159,39 @@ func (order *XSql2Order) execute(req string) (results []map[string]interface{}) 
 					break
 				case "float":
 					{
-						if t[order.fields[i].Name] != nil && order.fields[i].AS_ ==""{
+						if t[order.fields[i].Name] != nil && order.fields[i].AS_ == "" {
 							//t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2Int(values[i].([]byte))
-							t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = values[i].(float32)
-						} else if order.fields[i].AS_ !="" {
+							t[order.fields[i].Target.GetName()+"."+order.fields[i].Name] = values[i].(float32)
+						} else if order.fields[i].AS_ != "" {
 							//t[order.fields[i].Name] = byte2Int(values[i].([]byte))
 							t[order.fields[i].AS_] = values[i].(float32)
-						}else {
+						} else {
 							t[order.fields[i].Name] = values[i].(float32)
 						}
 					}
 					break
 				case "string":
 					{
-						if t[order.fields[i].Name] != nil && order.fields[i].AS_ ==""{
+						if t[order.fields[i].Name] != nil && order.fields[i].AS_ == "" {
 							//t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2Int(values[i].([]byte))
-							t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2String(values[i].([]byte))
-						} else if order.fields[i].AS_ !="" {
+							t[order.fields[i].Target.GetName()+"."+order.fields[i].Name] = byte2String(values[i].([]byte))
+						} else if order.fields[i].AS_ != "" {
 							//t[order.fields[i].Name] = byte2Int(values[i].([]byte))
 							t[order.fields[i].AS_] = byte2String(values[i].([]byte))
-						}else {
+						} else {
 							t[order.fields[i].Name] = byte2String(values[i].([]byte))
 						}
 					}
 					break
 				default:
 					{
-						if t[order.fields[i].Name] != nil && order.fields[i].AS_ ==""{
+						if t[order.fields[i].Name] != nil && order.fields[i].AS_ == "" {
 							//t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2Int(values[i].([]byte))
-							t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = getInitValue(values[i].([]byte))
-						} else if order.fields[i].AS_ !="" {
+							t[order.fields[i].Target.GetName()+"."+order.fields[i].Name] = getInitValue(values[i].([]byte))
+						} else if order.fields[i].AS_ != "" {
 							//t[order.fields[i].Name] = byte2Int(values[i].([]byte))
 							t[order.fields[i].AS_] = getInitValue(values[i].([]byte))
-						}else {
+						} else {
 							t[order.fields[i].Name] = getInitValue(values[i].([]byte))
 						}
 						//t[order.fields[i].Name] = getInitValue(values[i].([]byte))

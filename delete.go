@@ -29,7 +29,6 @@ func (order *XSql2Order)Delete() string {
 		rows,err := stmt.Query()
 		checkErr(err)
 	}*/
-	list := order.execute(sqlOrder.String())
-	fmt.Println("list:",list)
+	order.executeNoResult(sqlOrder.String())
 	return "true"
 }
