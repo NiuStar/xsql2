@@ -61,6 +61,7 @@ type condition struct {
 	param int //0 =? 1 ID =ID
 	type_ int //0 AND 1 OR
 	brackets int //0 nothing 1_(col_  2_col(_  3_)col_ 4_col)_
+	bracketsnum int
 	value string
 }
 

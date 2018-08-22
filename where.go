@@ -22,6 +22,8 @@ type XSql2Where interface {
 	Like(obj *XSqlParam, v string)XSql2Where
 }
 
+
+//where语句
 func (order *XSql2Order) Where(obj *XSqlParam, op string, v interface{}) XSql2Where {
 
 	//str := strings.ToLower(value)//统一转为小写
@@ -39,7 +41,9 @@ func (order *XSql2Order) Where(obj *XSqlParam, op string, v interface{}) XSql2Wh
 	//}
 
 	if len(order.tables) > 1 || len(order.join) > 0 {
+		//查询语句
 		order.conditions = append(order.conditions, &condition{param: 0, type_: 0, value: obj.Target.GetName() + "." + obj.Name + op + "?"})
+		//传入查询参数
 		order.args = append(order.args, v)
 	} else {
 		order.conditions = append(order.conditions, &condition{param: 0, type_: 0, value: obj.Name + op + "?"})
@@ -60,6 +64,8 @@ func (order *XSql2Order) WhereParam(obj *XSqlParam, op string, obj2 *XSqlParam) 
 	return order
 }
 
+
+//改用OR，默认AND
 func (order *XSql2Order) OR() XSql2Where{
 	i := len(order.conditions)-1
 	order.conditions[i].type_=1
@@ -67,10 +73,11 @@ func (order *XSql2Order) OR() XSql2Where{
 }
 
 
-
+//左括号
 func (order *XSql2Order) LL() XSql2Where{
 	i := len(order.conditions)-1
 	order.conditions[i].brackets=1
+	order.conditions[i].bracketsnum++
 	return order
 }
 func (order *XSql2Order) LR() XSql2Where{
@@ -83,9 +90,11 @@ func (order *XSql2Order) RL() XSql2Where{
 	order.conditions[i].brackets=3
 	return order
 }
+//右括号
 func (order *XSql2Order) RR() XSql2Where{
 	i := len(order.conditions)-1
 	order.conditions[i].brackets=4
+	order.conditions[i].bracketsnum++
 	return order
 }
 
@@ -99,9 +108,13 @@ func (order *XSql2Order) getWhereString() string {
 		for index, _ := range order.conditions {
 			//sqlOrder += condition
 			if order.conditions[index].brackets ==1{
-				sqlOrder.WriteString(" ( ")
+				for i := 0;i<order.conditions[index].bracketsnum;i++{
+					sqlOrder.WriteString(" ( ")
+				}
 			}else if order.conditions[index].brackets == 3 {
-				sqlOrder.WriteString(" ) ")
+				for i := 0;i<order.conditions[index].bracketsnum;i++ {
+					sqlOrder.WriteString(" ) ")
+				}
 			}
 
 			//if index != 0 {
@@ -118,9 +131,13 @@ func (order *XSql2Order) getWhereString() string {
 			sqlOrder.WriteString(order.conditions[index].value)
 
 			if order.conditions[index].brackets ==2{
-				sqlOrder.WriteString(" ( ")
+				for i := 0;i<order.conditions[index].bracketsnum;i++ {
+					sqlOrder.WriteString(" ( ")
+				}
 			}else if order.conditions[index].brackets == 4 {
-				sqlOrder.WriteString(" ) ")
+				for i := 0;i<order.conditions[index].bracketsnum;i++ {
+					sqlOrder.WriteString(" ) ")
+				}
 			}
 			if index != len(order.conditions)-1 {
 
