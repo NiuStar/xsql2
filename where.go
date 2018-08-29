@@ -15,6 +15,7 @@ type XSql2Where interface {
 	Select() []map[string]interface{}
 	Update() bool
 	Delete() string
+	Count()int64
 	OrderByDESC(obj... *XSqlParam) XSql2OrderBy
 	OrderByASC(obj... *XSqlParam) XSql2OrderBy
 	LIMIT(a,z int) XSql2limit

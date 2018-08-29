@@ -53,7 +53,7 @@ func (order *XSql2Order) Select() []map[string]interface{} {
 	}
 	sqlOrder.WriteString( order.getWhereString())
 	sqlOrder.WriteString( order.getOrderString())
-
+	sqlOrder.WriteString( order.getLimitString())
 	/*stmt := order.xsql2.stmts[sqlOrder]
 	if stmt != nil {
 		rows,err := stmt.Query()
