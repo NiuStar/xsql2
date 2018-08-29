@@ -31,9 +31,10 @@ func (order *XSql2Order) executeForLastInsertId(req string) int64 {
 	var r sql.Result
 	var err error
 	defer func() {
-		if err.Error() != "" {
+		if err != nil {
 			fmt.Println("ExecuteNoResult执行语句: ", req)
 			fmt.Println("ExecuteNoResult执行参数: ", order.args)
+			fmt.Println(string(debug.Stack()))
 		}
 	}()
 	if order.xsql2.txopen == 1 {
@@ -62,8 +63,8 @@ func (order *XSql2Order) execute(req string) (results []map[string]interface{}) 
 	//	}
 	//}()
 
-	fmt.Println("Execute执行语句: ", req)
-	fmt.Println("Execute执行参数: ", order.args)
+	//fmt.Println("Execute执行语句: ", req)
+	//fmt.Println("Execute执行参数: ", order.args)
 
 	//s.ch = 0
 	//s.xs.mLock.RLock()
@@ -72,9 +73,11 @@ func (order *XSql2Order) execute(req string) (results []map[string]interface{}) 
 	var err error
 
 	defer func() {
-		if err.Error() != "" {
+		if err != nil {
 			fmt.Println("ExecuteNoResult执行语句: ", req)
 			fmt.Println("ExecuteNoResult执行参数: ", order.args)
+			fmt.Println(err)
+			fmt.Println(string(debug.Stack()))
 		}
 	}()
 
@@ -205,4 +208,77 @@ func (order *XSql2Order) execute(req string) (results []map[string]interface{}) 
 
 	}
 	return results
+}
+
+
+func (order *XSql2Order) executeForCount(req string) int64 { //SQL
+
+	//defer func() {
+	//	if err := recover(); err != nil {
+	//		fmt.Println("数据库执行错误：", err)
+	//	}
+	//}()
+
+	//fmt.Println("Execute执行语句: ", req)
+	//fmt.Println("Execute执行参数: ", order.args)
+
+	//s.ch = 0
+	//s.xs.mLock.RLock()
+	//go timer(s)
+	var rows *sql.Rows
+	var err error
+
+	defer func() {
+		if err != nil {
+			fmt.Println("ExecuteNoResult执行语句: ", req)
+			fmt.Println("ExecuteNoResult执行参数: ", order.args)
+		}
+	}()
+	//var n int
+	//n = len(order.args)
+	//if order.limit != ""{
+	//	n -=2
+	//}
+	//fmt.Println(n)
+	if order.xsql2.txopen == 1 {
+		rows, err = order.xsql2.tx.Query(req, order.args...)
+	} else {
+		rows, err = order.xsql2.db.Query(req, order.args...)
+	}
+
+	//s.xs.mLock.RUnlock()
+	//s.ch = 1
+	if err != nil {
+		fmt.Println("error: ", err)
+		//s.xs.mLock.RLock()
+		/*s.xs.db.Close()
+		db := createDB(s.xs.name, s.xs.password, s.xs.ip, s.xs.port, s.xs.sqlName)
+		s.xs.db = db
+		s.xs.time_last = time.Now().Unix()
+
+		rows, err = order.xsql2.db.Query(req)
+		defer rows.Close()
+		checkErr(err)*/
+		return 0
+	}
+
+	defer rows.Close()
+	columns, err2 := rows.Columns()
+	if err2 != nil {
+		fmt.Println(err2) // proper error handling instead of panic in your app
+		return 0
+	}
+
+	if len(columns) <= 0 {
+		return 0
+	}
+	var num int64
+	for rows.Next() {
+
+		err = rows.Scan(&num)
+		if err != nil {
+			panic(err.Error()) // proper error handling instead of panic in your app
+		}
+	}
+	return num
 }
