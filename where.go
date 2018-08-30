@@ -14,7 +14,6 @@ type XSql2Where interface {
 	OR() XSql2Where//   id =1 OR
 	Select() []map[string]interface{}
 	Update() bool
-	Delete() string
 	Count()int64
 	OrderByDESC(obj... *XSqlParam) XSql2OrderBy
 	OrderByASC(obj... *XSqlParam) XSql2OrderBy
@@ -22,8 +21,6 @@ type XSql2Where interface {
 	IN(obj *XSqlParam, v ...interface{})XSql2Where
 	Like(obj *XSqlParam, v string)XSql2Where
 }
-
-
 //where语句
 func (order *XSql2Order) Where(obj *XSqlParam, op string, v interface{}) XSql2Where {
 

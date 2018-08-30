@@ -127,89 +127,97 @@ func (order *XSql2Order) execute(req string) (results []map[string]interface{}) 
 			panic(err.Error()) // proper error handling instead of panic in your app
 		}
 		t := make(map[string]interface{})
-		for i, _ := range values {
-			//判断有没有别名，
-			if values[i] == nil {
-				if t[order.fields[i].Name] != nil && order.fields[i].AS_ == "" {
-					//t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2Int(values[i].([]byte))
-					t[order.fields[i].Target.GetName()+"."+order.fields[i].Name] = nil
-				} else if order.fields[i].AS_ != "" {
-					//t[order.fields[i].Name] = byte2Int(values[i].([]byte))
-					t[order.fields[i].AS_] = nil
+		if len(order.fields) == 0 || order.fields[0].Name == "*" {
+
+			for i1, _ := range values {
+				t[columns[i1]] = values[i1]
+				}
+			InterfaceToString2(t)
+		}else {
+			for i, _ := range values {
+				//判断有没有别名，
+				if values[i] == nil {
+					if t[order.fields[i].Name] != nil && order.fields[i].AS_ == "" {
+						//t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2Int(values[i].([]byte))
+						t[order.fields[i].Target.GetName()+"."+order.fields[i].Name] = nil
+					} else if order.fields[i].AS_ != "" {
+						//t[order.fields[i].Name] = byte2Int(values[i].([]byte))
+						t[order.fields[i].AS_] = nil
+					} else {
+						t[order.fields[i].Name] = nil
+					}
+					//t[order.fields[i].Name] = nil
 				} else {
-					t[order.fields[i].Name] = nil
+					//fmt.Println("order.fields[i].Type_:",order.fields[i].Type_)
+					switch order.fields[i].Type_ {
+
+					case "int":
+						{
+							//fmt.Println("order.fields[i].Name:",byte2Int(values[i].([]byte)))
+
+							if t[order.fields[i].Name] != nil && order.fields[i].AS_ == "" {
+								//t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2Int(values[i].([]byte))
+								t[order.fields[i].Target.GetName()+"."+order.fields[i].Name] = values[i].(int64)
+							} else if order.fields[i].AS_ != "" {
+								//t[order.fields[i].Name] = byte2Int(values[i].([]byte))
+								t[order.fields[i].AS_] = values[i].(int64)
+							} else {
+								t[order.fields[i].Name] = values[i].(int64)
+							}
+
+						}
+						break
+					case "float":
+						{
+							if t[order.fields[i].Name] != nil && order.fields[i].AS_ == "" {
+								//t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2Int(values[i].([]byte))
+								t[order.fields[i].Target.GetName()+"."+order.fields[i].Name] = values[i].(float32)
+							} else if order.fields[i].AS_ != "" {
+								//t[order.fields[i].Name] = byte2Int(values[i].([]byte))
+								t[order.fields[i].AS_] = values[i].(float32)
+							} else {
+								t[order.fields[i].Name] = values[i].(float32)
+							}
+						}
+						break
+					case "string":
+						{
+							if t[order.fields[i].Name] != nil && order.fields[i].AS_ == "" {
+								//t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2Int(values[i].([]byte))
+								t[order.fields[i].Target.GetName()+"."+order.fields[i].Name] = byte2String(values[i].([]byte))
+							} else if order.fields[i].AS_ != "" {
+								//t[order.fields[i].Name] = byte2Int(values[i].([]byte))
+								t[order.fields[i].AS_] = byte2String(values[i].([]byte))
+							} else {
+								t[order.fields[i].Name] = byte2String(values[i].([]byte))
+							}
+						}
+						break
+					default:
+						{
+							if t[order.fields[i].Name] != nil && order.fields[i].AS_ == "" {
+								//t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2Int(values[i].([]byte))
+								t[order.fields[i].Target.GetName()+"."+order.fields[i].Name] = getInitValue(values[i].([]byte))
+							} else if order.fields[i].AS_ != "" {
+								//t[order.fields[i].Name] = byte2Int(values[i].([]byte))
+								t[order.fields[i].AS_] = getInitValue(values[i].([]byte))
+							} else {
+								t[order.fields[i].Name] = getInitValue(values[i].([]byte))
+							}
+							//t[order.fields[i].Name] = getInitValue(values[i].([]byte))
+						}
+						break
+					}
 				}
-				//t[order.fields[i].Name] = nil
-			} else {
-				//fmt.Println("order.fields[i].Type_:",order.fields[i].Type_)
-				switch order.fields[i].Type_ {
 
-				case "int":
-					{
-						//fmt.Println("order.fields[i].Name:",byte2Int(values[i].([]byte)))
-
-						if t[order.fields[i].Name] != nil && order.fields[i].AS_ == "" {
-							//t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2Int(values[i].([]byte))
-							t[order.fields[i].Target.GetName()+"."+order.fields[i].Name] = values[i].(int64)
-						} else if order.fields[i].AS_ != "" {
-							//t[order.fields[i].Name] = byte2Int(values[i].([]byte))
-							t[order.fields[i].AS_] = values[i].(int64)
-						} else {
-							t[order.fields[i].Name] = values[i].(int64)
-						}
-
-					}
-					break
-				case "float":
-					{
-						if t[order.fields[i].Name] != nil && order.fields[i].AS_ == "" {
-							//t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2Int(values[i].([]byte))
-							t[order.fields[i].Target.GetName()+"."+order.fields[i].Name] = values[i].(float32)
-						} else if order.fields[i].AS_ != "" {
-							//t[order.fields[i].Name] = byte2Int(values[i].([]byte))
-							t[order.fields[i].AS_] = values[i].(float32)
-						} else {
-							t[order.fields[i].Name] = values[i].(float32)
-						}
-					}
-					break
-				case "string":
-					{
-						if t[order.fields[i].Name] != nil && order.fields[i].AS_ == "" {
-							//t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2Int(values[i].([]byte))
-							t[order.fields[i].Target.GetName()+"."+order.fields[i].Name] = byte2String(values[i].([]byte))
-						} else if order.fields[i].AS_ != "" {
-							//t[order.fields[i].Name] = byte2Int(values[i].([]byte))
-							t[order.fields[i].AS_] = byte2String(values[i].([]byte))
-						} else {
-							t[order.fields[i].Name] = byte2String(values[i].([]byte))
-						}
-					}
-					break
-				default:
-					{
-						if t[order.fields[i].Name] != nil && order.fields[i].AS_ == "" {
-							//t[order.fields[i].Target.GetName() + "." + order.fields[i].Name] = byte2Int(values[i].([]byte))
-							t[order.fields[i].Target.GetName()+"."+order.fields[i].Name] = getInitValue(values[i].([]byte))
-						} else if order.fields[i].AS_ != "" {
-							//t[order.fields[i].Name] = byte2Int(values[i].([]byte))
-							t[order.fields[i].AS_] = getInitValue(values[i].([]byte))
-						} else {
-							t[order.fields[i].Name] = getInitValue(values[i].([]byte))
-						}
-						//t[order.fields[i].Name] = getInitValue(values[i].([]byte))
-					}
-					break
-				}
 			}
-
 		}
+
 		results = append(results, t)
 
 	}
 	return results
 }
-
 
 func (order *XSql2Order) executeForCount(req string) int64 { //SQL
 
