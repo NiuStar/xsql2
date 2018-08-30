@@ -2,18 +2,22 @@ package xsql2
 
 import (
 	"bytes"
-	)
+	"fmt"
+)
 
 
 //select方法
 func (order *XSql2Order) Select() []map[string]interface{} {
-	if len(order.fields) <= 0 || len(order.tables) <= 0 {
+	if  len(order.tables) <= 0 {
 		return nil
 	}
 	var sqlOrder bytes.Buffer
 	sqlOrder.WriteString( "select ")
 
 	//写入要查询的字段
+	if len(order.fields)==0{
+		sqlOrder.WriteString( " * ")
+	}
 	for index, _ := range order.fields {
 		//fmt.Println("filed:", order.fields[index])
 		if len(order.tables) == 1 &&len(order.join)==0 {
@@ -59,6 +63,6 @@ func (order *XSql2Order) Select() []map[string]interface{} {
 		rows,err := stmt.Query()
 		checkErr(err)
 	}*/
-
+	fmt.Println(sqlOrder.String())
 	return order.execute(sqlOrder.String())
 }

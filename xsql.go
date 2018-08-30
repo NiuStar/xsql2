@@ -71,9 +71,15 @@ type XSqlObject interface {
 
 type XSql2Table interface {
 	Field(obj... *XSqlParam) XSql2Field
+	FieldAll() XSql2Field
 	LeftJoin(obj XSqlObject) XSql2Join
 	RightJoin(obj XSqlObject) XSql2Join
 	InnerJoin(obj XSqlObject) XSql2Join
+	Where(obj *XSqlParam, op string, v interface{}) XSql2Where
+	WhereParam(obj *XSqlParam, op string, obj2 *XSqlParam) XSql2Where
+	OrderByDESC(obj... *XSqlParam) XSql2OrderBy
+	OrderByASC(obj... *XSqlParam) XSql2OrderBy
+	Count()int64
 }
 
 type XSql2Field interface {
@@ -132,6 +138,12 @@ func (order *XSql2Order)Field(obj... *XSqlParam) XSql2Field {
 
 	//fmt.Println("obj:",obj)
 	order.fields = append(order.fields,obj...)
+	return order
+}
+func (order *XSql2Order)FieldAll() XSql2Field {
+
+	//fmt.Println("obj:",obj)
+	order.fields = append(order.fields,&XSqlParam{Name:"*"})
 	return order
 }
 //给某个字段重命名
